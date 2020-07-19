@@ -4,8 +4,11 @@ import mysql.connector
 import hashlib
 import uuid
 import time
+import os
 
 WORKING_URL = open("WORKING_URL.txt").read()
+
+DBCREDS = os.environ["IMPERSANODBCREDENTIALS"].split(":")
 
 class ChrSets:
     Hex = "abcdef1234567890"
@@ -28,12 +31,11 @@ def initiate_verification(request):
 ##    print(verify_employee_webhook)
 ##    print(employee_id)
 ##    print(buisness_id)
-    if verify_employee_webhook and employee_id and buisness_id and api_key:        
-        dbcreds = open("dbcredentials.txt").read().split("\n")
+    if verify_employee_webhook and employee_id and buisness_id and api_key:
         my_database = mysql.connector.connect(
-          host=dbcreds[0],
-          user=dbcreds[1],
-          password=dbcreds[2],
+          host=DBCREDS[0],
+          user=DBCREDS[1],
+          password=DBCREDS[2],
           auth_plugin='mysql_native_password'
         )
         mycursor = my_database.cursor()
