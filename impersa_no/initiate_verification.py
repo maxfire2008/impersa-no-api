@@ -5,18 +5,30 @@ import hashlib
 import uuid
 import time
 
+WORKING_URL = "http://localhost:8000"
+
+class ChrSets:
+    Hex = "abcdef1234567890"
+
+def parse(x,chrset):
+    x=str(x)
+    chrset=list(chrset)
+    out = ""
+    for i in x:
+        if i in chrset:
+            out+=i
+    return out
+
 def initiate_verification(request):
     verify_employee_webhook = request.POST.get("verify_employee_webhook",None)
     employee_id = request.POST.get("employee_id",None)
     buisness_id = request.POST.get("buisness_id",None)
-    print(verify_employee_webhook)
-    print(employee_id)
-    print(buisness_id)
-    if verify_employee_webhook and employee_id and buisness_id:
-        customer_link = "cus-link"
-        employee_link = "emp-link"
-        verifier_link = "ver-link"
-        
+    api_key = parse(request.POST.get("api_key",None),ChrSets.Hex)
+##    print(request.POST.dict())
+##    print(verify_employee_webhook)
+##    print(employee_id)
+##    print(buisness_id)
+    if verify_employee_webhook and employee_id and buisness_id and api_key:        
         dbcreds = open("dbcredentials.txt").read().split("\n")
         my_database = mysql.connector.connect(
           host=dbcreds[0],
@@ -24,22 +36,38 @@ def initiate_verification(request):
           password=dbcreds[2],
           auth_plugin='mysql_native_password'
         )
-        
         mycursor = my_database.cursor()
-        mycursor.execute(
-            "INSERT INTO impersa_no.verifications "+
-            "(buisness_id,employee_id,customer_link,employee_link,"+
-            "customer_allowed,employee_clip,verifier_allowed,verifier_link,verifier_ready)"+
-            "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)",
-            (int(buisness_id),int(employee_id),customer_link,employee_link,
-             None,None,None,verifier_link,verify_employee_webhook)
-        )
-        my_database.commit()
         
-        response = json.dumps({
-            "customer":customer_link,
-            "employee":employee_link
-            })
-        return HttpResponse(response)
+        mycursor.execute("SELECT * FROM impersa_no.buisness WHERE `id` = "+str(int(buisness_id)))
+        
+        if mycursor.fetchall()[0][2] == api_key:
+            customer_token = uuid.uuid4().hex
+            employee_token = uuid.uuid4().hex
+            verifier_token = uuid.uuid4().hex
+            customer_link = WORKING_URL+"/customer_check?token="+customer_token
+            employee_link = WORKING_URL+"/employee_check?token="+employee_token
+            verifier_link = WORKING_URL+"/verifier_check?token="+verifier_token
+            
+            mycursor.execute(
+                "INSERT INTO impersa_no.verifications "+
+                "(buisness_id,employee_id,customer_link,employee_link,"+
+                "customer_allowed,employee_clip,verifier_allowed,verifier_link,verifier_ready,"+
+                "customer_token,employee_token,verifier_token,created) "+
+                "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+                (int(buisness_id),int(employee_id),customer_link,employee_link,
+                 None,None,None,verifier_link,verify_employee_webhook,
+                 customer_token,employee_token,verifier_token,time.time())
+            )
+            my_database.commit()
+            
+            response = json.dumps({
+                "customer":customer_link,
+                "employee":employee_link
+                })
+            return HttpResponse(response)
+        else:
+            return HttpResponse("error",status=400)
     else:
         return HttpResponse("error",status=400)
+
+
