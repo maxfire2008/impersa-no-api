@@ -15,7 +15,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from . import initiate_verification, index
+from . import initiate_verification
+from . import index
 
 urlpatterns = [
     path('', index.index),

@@ -1,5 +1,6 @@
 from django.http import HttpResponse
 import json
+import mysql.connector
 
 def initiate_verification(request):
     verifying_employee_webhook = request.GET.get("verify_employee_webhook",None)
