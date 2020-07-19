@@ -9,10 +9,6 @@ import os
 WORKING_URL = open("WORKING_URL.txt").read()
 
 DBCREDS = os.environ["IMPERSANODBCREDENTIALS"].split(":")
-##DBCREDS2 = open("dbcredentials.txt").read().split("\n")
-##print(DBCREDS)
-##print(DBCREDS2)
-##DBCREDS = DBCREDS2
 
 class ChrSets:
     Hex = "abcdef1234567890"
