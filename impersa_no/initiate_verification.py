@@ -5,7 +5,7 @@ import hashlib
 import uuid
 import time
 
-WORKING_URL = "http://localhost:8000"
+WORKING_URL = open("WORKING_URL.txt").read()
 
 class ChrSets:
     Hex = "abcdef1234567890"
@@ -41,9 +41,24 @@ def initiate_verification(request):
         mycursor.execute("SELECT * FROM impersa_no.buisness WHERE `id` = "+str(int(buisness_id)))
         
         if mycursor.fetchall()[0][2] == api_key:
+            mycursor.execute("SELECT * FROM impersa_no.verifications")
+            verify_list_existing = mycursor.fetchall()
+            customer_tokens_existing = []
+            employee_tokens_existing = []
+            verifier_tokens_existing = []
+            for i in verify_list_existing:
+                customer_tokens_existing.append(i[10])
+                employee_tokens_existing.append(i[11])
+                verifier_tokens_existing.append(i[12])
             customer_token = uuid.uuid4().hex
+            while customer_token in customer_tokens_existing:
+                customer_token = uuid.uuid4().hex
             employee_token = uuid.uuid4().hex
+            while employee_token in employee_tokens_existing:
+                employee_token = uuid.uuid4().hex
             verifier_token = uuid.uuid4().hex
+            while verifier_token in verifier_tokens_existing:
+                verifier_token = uuid.uuid4().hex
             customer_link = WORKING_URL+"/customer_check?token="+customer_token
             employee_link = WORKING_URL+"/employee_check?token="+employee_token
             verifier_link = WORKING_URL+"/verifier_check?token="+verifier_token

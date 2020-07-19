@@ -17,8 +17,10 @@ from django.contrib import admin
 from django.urls import path
 from . import initiate_verification
 from . import index
+from . import customer_check
 
 urlpatterns = [
     path('', index.index),
     path('initiate_verification', initiate_verification.initiate_verification),
+    path('customer_check', customer_check.customer_check),
 ]
